@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Dash Web Ultra</title>
+    <style>
+        :root {
+            --bg-color: #0b0c10;
+            --surface-color: #1f2833;
+            --accent-color: #45f3ff;
+            --text-color: #ffffff;
+            --text-secondary: #c5a880;
+            --danger-color: #ff3e3e;
+            --success-color: #00ff87;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            background: #000;
+            border: 4px solid var(--surface-color);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(69, 243, 255, 0.2);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Screen / Menus UI */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(11, 12, 16, 0.95);
+            z-index: 10;
+            transition: opacity 0.2s ease;
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(69, 243, 255, 0.5);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+
+        .btn {
+            background: var(--surface-color);
+            color: var(--text-color);
+            border: 2px solid var(--accent-color);
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 5px rgba(69, 243, 255, 0.1);
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            border-color: var(--danger-color);
+        }
+        .btn-danger:hover {
+            background: var(--danger-color);
+            box-shadow: 0 0 15px var(--danger-color);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        /* Mode Tabs Layout */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--surface-color);
+            width: 80%;
+            justify-content: space-around;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #888;
+            transition: color 0.2s;
+        }
+
+        .tab.active {
+            color: var(--accent-color);
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        /* List container */
+        .list-container {
+            width: 80%;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 5px;
+        }
+
+        .list-item {
+            background: rgba(255,255,255,0.05);
+            padding: 12px 20px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--surface-color);
+        }
+
+        .list-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .list-item.completed {
+            border-left-color: var(--success-color);
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .item-subtitle {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        /* Editor Overlay UI */
+        #editor-ui {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 12, 16, 0.9);
+            border-top: 2px solid var(--surface-color);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+        }
+
+        .editor-palette {
+            display: flex;
+            gap: 10px;
+        }
+
+        .palette-btn {
+            width: 45px;
+            height: 45px;
+            background: var(--surface-color);
+            border: 2px solid #555;
+            color: white;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .palette-btn.active {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        #hud {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 2px 2px 4px #000;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 12;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        .back-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Customs modal & inputs */
+        .input-group {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            width: 80%;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            background: var(--surface-color);
+            border: 1px solid var(--accent-color);
+            color: white;
+            border-radius: 4px;
+        }
+
+        /* Scrollbar customizing */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--surface-color);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- HUD -->
+        <div id="hud" class="hidden">
+            <div id="hud-left">Level: <span id="hud-level-name">-</span></div>
+            <div id="hud-center"><span id="hud-percent">0%</span></div>
+            <div id="hud-right">Attempt <span id="hud-attempt">1</span></div>
+        </div>
+
+        <button id="global-back-btn" class="back-btn hidden">Menu</button>
+
+        <!-- MAIN MENU SCREEN -->
+        <div id="main-menu" class="screen">
+            <h1>GEOMETRY DASH</h1>
+            <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 25px; letter-spacing: 1px;">BROWSER ARCHIVER EDITION</div>
+            <div class="btn-group">
+                <button class="btn" onclick="switchTab('main')">🕹️ Play Levels</button>
+                <button class="btn" onclick="openEditorDashboard()">🛠️ Level Editor</button>
+                <button class="btn" onclick="switchTab('skins')">🎨 Icon Kit</button>
+            </div>
+        </div>
+
+        <!-- LEVEL BROWSER SCREEN -->
+        <div id="level-browser" class="screen hidden">
+            <div class="tabs">
+                <div class="tab active" id="tab-main" onclick="switchTab('main')">Main Levels</div>
+                <div class="tab" id="tab-daily" onclick="switchTab('daily')">Daily Levels</div>
+                <div class="tab" id="tab-custom" onclick="switchTab('custom')">Custom Levels</div>
+            </div>
+            
+            <div class="list-container" id="level-list">
+                <!-- Dynamically Populated -->
+            </div>
+        </div>
+
+        <!-- SKIN KIT SCREEN -->
+        <div id="skin-kit" class="screen hidden">
+            <h2>ICON KIT</h2>
+            <p style="margin-bottom: 15px; color: #aaa;">Customize your skin block archetype color pattern:</p>
+            <div class="btn-group" id="skin-options" style="margin-bottom: 20px;">
+                <!-- Populated dynamically -->
+            </div>
+            <button class="btn" onclick="backToMainMenu()">Confirm & Back</button>
+        </div>
+
+        <!-- EDITOR DASHBOARD SCREEN -->
+        <div id="editor-dashboard" class="screen hidden">
+            <h2>MY CUSTOM CREATIONS</h2>
+            <div class="input-group">
+                <input type="text" id="new-level-name" placeholder="Enter custom level name...">
+                <button class="btn" style="margin:0;" onclick="createNewCustomLevel()">Create New</button>
+            </div>
+            <div class="list-container" id="custom-created-list">
+                <!-- Dynamically Populated -->
+            </div>
+            <button class="btn btn-danger" onclick="backToMainMenu()">Back to Menu</button>
+        </div>
+
+        <!-- CANVAS FOR PLAYING / EDITING -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- EDITOR HUD & PALETTE BAR -->
+        <div id="editor-ui" class="hidden">
+            <div class="editor-palette">
+                <button class="palette-btn active" data-type="1" onclick="setTool(1)">▲<br>Spike</button>
+                <button class="palette-btn" data-type="2" onclick="setTool(2)">■<br>Block</button>
+                <button class="palette-btn" data-type="3" onclick="setTool(3)">◯<br>Ring</button>
+                <button class="palette-btn" data-type="4" onclick="setTool(4)">▼<br>Portal</button>
+                <button class="palette-btn" data-type="0" onclick="setTool(0)" style="border-color: var(--danger-color);">✕<br>Eraser</button>
+            </div>
+            <div style="font-size: 0.8rem; color:#888; text-align:center;">
+                Left Click: Place/Erase<br>A / D Keys: Scroll Timeline
+            </div>
+            <div class="editor-actions">
+                <button class="btn" style="padding: 6px 15px; font-size:0.9rem; margin:0;" onclick="testEditorLevel()">▶ Test</button>
+                <button class="btn btn-danger" style="padding: 6px 15px; font-size:0.9rem; margin:0;" onclick="exitEditor()">Save & Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Fix aspect resolution inside container bounding box
+        canvas.width = 800;
+        canvas.height = 450;
+
+        // --- APP STATES ---
+        let currentMode = 'menu'; // menu, play, edit
+        let activeTab = 'main'; // main, daily, custom
+        let currentLevelData = null;
+        let isEditingId = null;
+
+        // --- GAMEPLAY CONFIG & VARIABLES ---
+        let player = {
+            x: 100, y: 300,
+            vx: 5, vy: 0,
+            width: 30, height: 30,
+            isGrounded: false,
+            rotation: 0,
+            mode: 'cube', // cube, ship, wave, ball
+            gravityDir: 1, // 1 normal, -1 upside down
+        };
+
+        let cameraX = 0;
+        let obstacles = [];
+        let particles = [];
+        let currentAttempt = 1;
+        let gameLoopId = null;
+        let levelLength = 3000;
+        let isGameOver = false;
+
+        // --- SYNTH AUDIO CONFIG ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        let synthInterval = null;
+
+        // --- SYSTEM SKIN CONFIG ---
+        const skins = [
+            { id: 0, name: 'Neon Cyan', primary: '#45f3ff', secondary: '#008b94' },
+            { id: 1, name: 'Radioactive Lime', primary: '#00ff87', secondary: '#00a354' },
+            { id: 2, name: 'Hot Pink Dash', primary: '#ff007f', secondary: '#9e004f' },
+            { id: 3, name: 'Golden Sun', primary: '#ffbf00', secondary: '#b38600' }
+        ];
+        let chosenSkin = skins[0];
+
+        // --- DATABASE FOR THE BUILT-IN CORE RUNS ---
+        const mainLevels = [
+            { id: 'm1', name: 'Stereo Madness', difficulty: 'Easy', speed: 5, data: [ {x:400, type:1}, {x:600, type:2}, {x:630, type:1}, {x:800, type:2}, {x:830, type:2}, {x:1100, type:4, mode:'ship'}, {x:1400, type:1}, {x:1600, type:1}, {x:1800, type:4, mode:'cube'}, {x:2200, type:1}, {x:2500, type:1} ] },
+            { id: 'm2', name: 'Back On Track', difficulty: 'Normal', speed: 6, data: [ {x:350, type:1}, {x:500, type:3}, {x:530, type:1}, {x:750, type:2}, {x:900, type:4, mode:'ball'}, {x:1100, type:1}, {x:1300, type:1}, {x:1600, type:4, mode:'cube'}, {x:1900, type:1}, {x:2200, type:2}, {x:2500, type:1} ] },
+            { id: 'm3', name: 'Clubstep (Chiptune Version)', difficulty: 'Demon', speed: 7.5, data: [ {x:300, type:1}, {x:450, type:1}, {x:480, type:1}, {x:650, type:4, mode:'wave'}, {x:850, type:1}, {x:1050, type:1}, {x:1250, type:4, mode:'ship'}, {x:1500, type:1}, {x:1750, type:1}, {x:2000, type:4, mode:'cube'}, {x:2300, type:1}, {x:2600, type:1} ] }
+        ];
+
+        // System generates daily patterns based on the calendar timestamp day metric
+        function getDailyLevel() {
+            const dayStamp = new Date().toDateString();
+            // Seed objects based on static rules
+            let dailyObstacles = [];
+            for (let i = 1; i <= 10; i++) {
+                dailyObstacles.push({ x: i * 260 + 200, type: (i % 2 === 0) ? 1 : 2 });
+                if (i === 4) dailyObstacles.push({ x: i * 260 + 230, type: 4, mode: 'ship'});
+                if (i === 7) dailyObstacles.push({ x: i * 260 + 230, type: 4, mode: 'cube'});
+            }
+            return { id: 'daily_' + dayStamp, name: 'Daily Circuit: ' + dayStamp, difficulty: 'Hard (Daily)', speed: 6.2, data: dailyObstacles };
+        }
+
+        // Load custom level creations database out of browser cache persistence layer
+        function getCustomLevels() {
+            let list = localStorage.getItem('gd_custom_levels');
+            return list ? JSON.parse(list) : [];
+        }
+
+        function saveCustomLevels(list) {
+            localStorage.setItem('gd_custom_levels', JSON.stringify(list));
+        }
+
+        // --- EDITOR MODULE PARAMS ---
+        let currentToolType = 1; // 1: Spike, 2: Block, 3: Ring, 4: Portal
+        let editorScrollX = 0;
+
+        // Initialize App Interface Hook routines
+        window.onload = () => {
+            renderSkinKitOptions();
+            renderLevelBrowser();
+            setupInputListeners();
+        };
+
+        function renderSkinKitOptions() {
+            const container = document.getElementById('skin-options');
+            container.innerHTML = '';
+            skins.forEach(s => {
+                const b = document.createElement('button');
+                b.className = 'btn';
+                b.style.borderColor = s.primary;
+                b.innerText = s.name;
+                b.onclick = () => { chosenSkin = s; alert(`Skin switched to ${s.name}!`); };
+                container.appendChild(b);
+            });
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            const matchedTab = document.getElementById('tab-' + tab);
+            if(matchedTab) matchedTab.classList.add('active');
+
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('editor-dashboard').classList.add('hidden');
+            document.getElementById('skin-kit').classList.add('hidden');
+            document.getElementById('level-browser').classList.remove('hidden');
+            document.getElementById('global-back-btn').classList.remove('hidden');
+
+            if (tab === 'skins') {
+                document.getElementById('level-browser').classList.add('hidden');
+                document.getElementById('skin-kit').classList.remove('hidden');
+            } else {
+                renderLevelBrowser();
+            }
+        }
+
+        function backToMainMenu() {
+            document.getElementById('level-browser').classList.add('hidden');
+            document.getElementById('skin-kit').classList.add('hidden');
+            document.getElementById('editor-dashboard').classList.add('hidden');
+            document.getElementById('editor-ui').classList.add('hidden');
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('global-back-btn').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+            currentMode = 'menu';
+            stopAudio();
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
+        }
+
+        document.getElementById('global-back-btn').onclick = backToMainMenu;
+
+        function renderLevelBrowser() {
+            const container = document.getElementById('level-list');
+            container.innerHTML = '';
+            let targetList = [];
+
+            if (activeTab === 'main') targetList = mainLevels;
+            else if (activeTab === 'daily') targetList = [getDailyLevel()];
+            else if (activeTab === 'custom') targetList = getCustomLevels();
+
+            if (targetList.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding: 20px; color:#666;">No custom maps loaded. Jump to Level Editor dashboard to compose one!</div>';
+                return;
+            }
+
+            targetList.forEach(lvl => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                
+                // Track completion via cookie/localStorage
+                const isDone = localStorage.getItem('completed_' + lvl.id);
+                if(isDone) item.classList.add('completed');
+
+                item.innerHTML = `
+                    <div class="item-info">
+                        <span class="item-title">${lvl.name}</span>
+                        <span class="item-subtitle">Difficulty: ${lvl.difficulty || 'Custom'} | Speed: ${lvl.speed}x</span>
+                    </div>
+                    <button class="btn" style="padding:6px 15px; font-size:0.9rem; margin:0;" onclick="startLevelPlay('${lvl.id}')">PLAY</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function openEditorDashboard() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('editor-dashboard').classList.remove('hidden');
+            document.getElementById('global-back-btn').classList.add('hidden');
+            renderEditorDashboardList();
+        }
+
+        function renderEditorDashboardList() {
+            const container = document.getElementById('custom-created-list');
+            container.innerHTML = '';
+            const customs = getCustomLevels();
+
+            customs.forEach(lvl => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="item-info">
+                        <span class="item-title">${lvl.name}</span>
+                        <span class="item-subtitle">${lvl.data.length} components placed</span>
+                    </div>
+                    <div>
+                        <button class="btn" style="padding:5px 10px; font-size:0.8rem; margin:2px;" onclick="startLevelEditor('${lvl.id}')">Edit</button>
+                        <button class="btn btn-danger" style="padding:5px 10px; font-size:0.8rem; margin:2px;" onclick="deleteCustomLevel('${lvl.id}')">Delete</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function createNewCustomLevel() {
+            const nameInput = document.getElementById('new-level-name');
+            const name = nameInput.value.trim();
+            if(!name) return alert('Provide a map track name!');
+
+            let customs = getCustomLevels();
+            let newLvl = {
+                id: 'custom_' + Date.now(),
+                name: name,
+                difficulty: 'Custom Composition',
+                speed: 6,
+                data: []
+            };
+
+            customs.push(newLvl);
+            saveCustomLevels(customs);
+            nameInput.value = '';
+            renderEditorDashboardList();
+        }
+
+        function deleteCustomLevel(id) {
+            let customs = getCustomLevels().filter(l => l.id !== id);
+            saveCustomLevels(customs);
+            renderEditorDashboardList();
+        }
+
+        // --- CORE AUDIO RETRO SYNTHESIS ENGINE ---
+        function startAudio() {
+            try {
+                if(!audioCtx) audioCtx = new AudioContext();
+                stopAudio();
+
+                let beat = 0;
+                synthInterval = setInterval(() => {
+                    if (!audioCtx || isGameOver) return;
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    // Procedural rhythm sequence notes
+                    let notes = [130.81, 146.83, 164.81, 196.00, 220.00];
+                    if (player.mode === 'ship') notes = [261.63, 293.66, 329.63, 392.00];
+                    if (player.mode === 'wave') notes = [392.00, 440.00, 523.25, 587.33];
+
+                    let note = notes[beat % notes.length];
+                    if (beat % 4 === 0) note *= 0.5; // Accent downbeats
+
+                    osc.frequency.setValueAtTime(note, audioCtx.currentTime);
+                    osc.type = 'sawtooth';
+                    
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.16);
+                    beat++;
+                }, 180);
+            } catch(e) { console.log("Audio activation issue:", e); }
+        }
+
+        function stopAudio() {
+            if(synthInterval) clearInterval(synthInterval);
+        }
+
+        function playCrashSound() {
+            if(!audioCtx) return;
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.4);
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // --- GAMEPLAY CONTROLLER ENGINE ---
+        function startLevelPlay(id) {
+            // Find Level
+            if (id.startsWith('custom_')) {
+                currentLevelData = getCustomLevels().find(l => l.id === id);
+            } else if (id.startsWith('daily_')) {
+                currentLevelData = getDailyLevel();
+            } else {
+                currentLevelData = mainLevels.find(l => l.id === id);
+            }
+
+            if(!currentLevelData) return;
+
+            document.getElementById('level-browser').classList.add('hidden');
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('global-back-btn').classList.remove('hidden');
+
+            document.getElementById('hud-level-name').innerText = currentLevelData.name;
+            currentAttempt = 1;
+            document.getElementById('hud-attempt').innerText = currentAttempt;
+
+            currentMode = 'play';
+            resetPlayerSession();
+            startAudio();
+
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
+            gameLoopId = requestAnimationFrame(updateLoop);
+        }
+
+        function resetPlayerSession() {
+            player.x = 100;
+            player.y = 300;
+            player.vy = 0;
+            player.vx = currentLevelData.speed || 5;
+            player.mode = 'cube';
+            player.gravityDir = 1;
+            player.rotation = 0;
+            player.isGrounded = false;
+            cameraX = 0;
+            obstacles = JSON.parse(JSON.stringify(currentLevelData.data));
+            particles = [];
+            isGameOver = false;
+        }
+
+        function handleCrash() {
+            isGameOver = true;
+            playCrashSound();
+            
+            // Generate Explosion Shards
+            for(let i=0; i<25; i++) {
+                particles.push({
+                    x: player.x + player.width/2,
+                    y: player.y + player.height/2,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    color: chosenSkin.primary,
+                    size: Math.random() * 5 + 3,
+                    life: 1.0
+                });
+            }
+
+            setTimeout(() => {
+                currentAttempt++;
+                document.getElementById('hud-attempt').innerText = currentAttempt;
+                resetPlayerSession();
+            }, 800);
+        }
+
+        function setupInputListeners() {
+            const triggerJump = () => {
+                if (currentMode !== 'play' || isGameOver) return;
+                
+                if (player.mode === 'cube') {
+                    if (player.isGrounded) {
+                        player.vy = -12 * player.gravityDir;
+                        player.isGrounded = false;
+                    }
+                } else if (player.mode === 'ship') {
+                    player.vy -= 0.7 * player.gravityDir;
+                } else if (player.mode === 'wave') {
+                    player.vy = -6 * player.gravityDir;
+                } else if (player.mode === 'ball') {
+                    if (player.isGrounded) {
+                        player.gravityDir *= -1;
+                        player.isGrounded = false;
+                    }
+                }
+            };
+
+            const releaseJump = () => {
+                if (currentMode === 'play' && player.mode === 'wave') {
+                    player.vy = 6 * player.gravityDir;
+                }
+            };
+
+            // Keyboard Hooks
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    triggerJump();
+                }
+                // Editor Navigation Scroll inputs
+                if (currentMode === 'edit') {
+                    if (e.code === 'KeyD') editorScrollX += 30;
+                    if (e.code === 'KeyA') editorScrollX = Math.max(0, editorScrollX - 30);
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    releaseJump();
+                }
+            });
+
+            // Touch / Click Interactive Hooks
+            canvas.addEventListener('mousedown', (e) => {
+                if (currentMode === 'play') {
+                    triggerJump();
+                } else if (currentMode === 'edit') {
+                    handleEditorCanvasClick(e);
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (currentMode === 'play') releaseJump();
+            });
+        }
+
+        // --- PRIMARY SIMULATION UPDATE LOOP ---
+        function updateLoop() {
+            if (currentMode === 'play') {
+                if (!isGameOver) {
+                    updatePlayerPhysics();
+                }
+                updateParticles();
+                cameraX = player.x - 150;
+                drawPlayScreen();
+                checkLevelProgression();
+            } else if (currentMode === 'edit') {
+                drawEditorScreen();
+            }
+            gameLoopId = requestAnimationFrame(updateLoop);
+        }
+
+        function updatePlayerPhysics() {
+            player.x += player.vx;
+
+            // Apply standard environmental gravity vectors based on vehicle attributes
+            let gravityForce = 0.6 * player.gravityDir;
+            if (player.mode === 'ship') gravityForce = 0.3 * player.gravityDir;
+            if (player.mode === 'wave') gravityForce = 0; // Absolute angle trajectory vectors
+
+            player.vy += gravityForce;
+
+            // Cap terminal velocity bounds
+            let termVel = 12;
+            if(player.mode === 'ship') termVel = 6;
+            if(Math.abs(player.vy) > termVel) player.vy = termVel * Math.sign(player.vy);
+
+            player.y += player.vy;
+
+            // Floor & Ceiling Boundaries Collisions checking routines
+            const floorY = 350 - player.height;
+            const ceilingY = 50;
+
+            if (player.gravityDir === 1) {
+                if (player.y >= floorY) {
+                    player.y = floorY;
+                    player.vy = 0;
+                    player.isGrounded = true;
+                }
+            } else { // Inverted gravity floor logic
+                if (player.y <= ceilingY) {
+                    player.y = ceilingY;
+                    player.vy = 0;
+                    player.isGrounded = true;
+                }
+            }
+
+            // Simple visual animation profile rotations ticks
+            if (!player.isGrounded) {
+                if (player.mode === 'cube') {
+                    player.rotation += 0.08 * player.gravityDir;
+                } else if (player.mode === 'ship') {
+                    player.rotation = player.vy * 0.08;
+                } else if (player.mode === 'wave') {
+                    player.rotation = player.vy > 0 ? 0.5 : -0.5;
+                }
+            } else {
+                if (player.mode === 'cube') {
+                    // Snap visual layer to flat 90 deg squares intervals cleanly
+                    player.rotation = Math.round(player.rotation / (Math.PI / 2)) * (Math.PI / 2);
+                } else {
+                    player.rotation = 0;
+                }
+            }
+
+            // Spawn movement dust particles trail array lists
+            if (Math.random() < 0.4 && !isGameOver) {
+                particles.push({
+                    x: player.x,
+                    y: player.y + (player.gravityDir === 1 ? player.height : 0),
+                    vx: -2, vy: (Math.random() - 0.5) * 2,
+                    color: chosenSkin.secondary,
+                    size: Math.random() * 4 + 1,
+                    life: 0.6
+                });
+            }
+
+            // Calculate obstacle bounding matrix hits
+            obstacles.forEach(obs => {
+                // Approximate bounding boxes computations
+                if (player.x + player.width > obs.x && player.x < obs.x + 30) {
+                    if (obs.type === 1) { // Spike hazard type
+                        let hazardTop = 350 - 30;
+                        if (player.y + player.height > hazardTop) handleCrash();
+                    } else if (obs.type === 2) { // Solid geometry block layer type
+                        let blockTop = 350 - 30;
+                        if (player.y + player.height > blockTop && player.vy > 0) {
+                            player.y = blockTop;
+                            player.vy = 0;
+                            player.isGrounded = true;
+                        } else if (player.x + player.width - player.vx <= obs.x) {
+                            handleCrash(); // Wall slam routine crash trigger
+                        }
+                    } else if (obs.type === 3) { // Floating yellow jumping orb trigger structure
+                        if (Math.abs(player.y + player.height/2 - (300)) < 40) {
+                            // Automatically triggers mid air jump impulse boost when intersection hits
+                            player.vy = -13 * player.gravityDir;
+                            player.isGrounded = false;
+                        }
+                    } else if (obs.type === 4) { // Physics Vehicle Portal mechanism
+                        player.mode = obs.mode || 'cube';
+                    }
+                }
+            });
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function checkLevelProgression() {
+            let pct = Math.min(100, Math.floor((player.x / levelLength) * 100));
+            document.getElementById('hud-percent').innerText = pct + '%';
+
+            if (player.x >= levelLength) {
+                isGameOver = true;
+                stopAudio();
+                localStorage.setItem('completed_' + currentLevelData.id, 'true');
+                alert(`LEVEL COMPLETE! 🎉
+Attempts: ${currentAttempt}`);
+                backToMainMenu();
+            }
+        }
+
+        // --- DRAWING GRAPHICS ENGINE ---
+        function drawPlayScreen() {
+            // Draw background gradient patterns
+            ctx.fillStyle = '#0b0c10';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Matrix scrolling alignment offset context
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+
+            // Draw level floor grid bounds planes
+            ctx.fillStyle = '#1f2833';
+            ctx.fillRect(0, 350, levelLength + 1000, 5);
+            ctx.fillStyle = '#151a21';
+            ctx.fillRect(0, 351, levelLength + 1000, 100);
+
+            // Ceiling line bounds
+            ctx.fillStyle = '#1f2833';
+            ctx.fillRect(0, 50, levelLength + 1000, 2);
+
+            // Render Particle arrays profiles
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+            });
+            ctx.globalAlpha = 1.0;
+
+            // Render Map components structures
+            obstacles.forEach(obs => {
+                if (obs.type === 1) { // Spike component
+                    ctx.fillStyle = varColor('--danger-color');
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, 350);
+                    ctx.lineTo(obs.x + 15, 320);
+                    ctx.lineTo(obs.x + 30, 350);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (obs.type === 2) { // Building Block component
+                    ctx.fillStyle = '#45f3ff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.fillRect(obs.x, 320, 30, 30);
+                    ctx.strokeRect(obs.x, 320, 30, 30);
+                } else if (obs.type === 3) { // Jump Ring component
+                    ctx.fillStyle = '#ffbf00';
+                    ctx.beginPath();
+                    ctx.arc(obs.x + 15, 300, 12, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.stroke();
+                } else if (obs.type === 4) { // Mode Portal ring portal component
+                    ctx.fillStyle = '#ff007f';
+                    ctx.fillRect(obs.x, 150, 20, 200);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px sans-serif';
+                    ctx.fillText((obs.mode || 'cube').toUpperCase(), obs.x - 10, 140);
+                }
+            });
+
+            // Render Player Icon Avatar Skin matrices
+            if (!isGameOver) {
+                ctx.save();
+                ctx.translate(player.x + player.width/2, player.y + player.height/2);
+                ctx.rotate(player.rotation);
+
+                // Draw Core Character configuration matching skin choices
+                ctx.fillStyle = chosenSkin.primary;
+                ctx.fillRect(-player.width/2, -player.height/2, player.width, player.height);
+                
+                // Secondary design layout block frames inner geometry matching authentic styles
+                ctx.fillStyle = chosenSkin.secondary;
+                ctx.fillRect(-player.width/4, -player.height/4, player.width/2, player.height/2);
+
+                // Decorative eyes layout slots
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(-10, -10, 6, 6);
+                ctx.fillRect(4, -10, 6, 6);
+
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        function varColor(name) {
+            if(name === '--danger-color') return '#ff3e3e';
+            return '#45f3ff';
+        }
+
+        // --- LEVEL EDITOR MODE LOGIC INTERFACES ---
+        function startLevelEditor(id) {
+            isEditingId = id;
+            currentLevelData = getCustomLevels().find(l => l.id === id);
+            if(!currentLevelData) return;
+
+            document.getElementById('editor-dashboard').classList.add('hidden');
+            document.getElementById('editor-ui').classList.remove('hidden');
+            
+            currentMode = 'edit';
+            editorScrollX = 0;
+            obstacles = currentLevelData.data || [];
+
+            if(gameLoopId) cancelAnimationFrame(gameLoopId);
+            gameLoopId = requestAnimationFrame(updateLoop);
+        }
+
+        function setTool(type) {
+            currentToolType = type;
+            document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function handleEditorCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Map canvas pixel coords targeting grid space metrics bounds adjustments
+            const absoluteX = clickX + editorScrollX;
+
+            // Round snap positioning allocations layout blocks grid alignments
+            const snappedX = Math.round(absoluteX / 30) * 30;
+
+            if (currentToolType === 0) { // Eraser mode selector toggle routine
+                obstacles = obstacles.filter(obs => Math.abs(obs.x - snappedX) > 15);
+            } else {
+                // Clear any overlapping objects occupying same track space
+                obstacles = obstacles.filter(obs => Math.abs(obs.x - snappedX) > 15);
+
+                let newObj = { x: snappedX, type: currentToolType };
+                if (currentToolType === 4) {
+                    // Cyclic switch portals vehicle variations vectors settings configurations
+                    const portalModes = ['ship', 'wave', 'ball', 'cube'];
+                    const randMode = portalModes[Math.floor(Math.random() * portalModes.length)];
+                    newObj.mode = randMode;
+                }
+                obstacles.push(newObj);
+            }
+        }
+
+        function drawEditorScreen() {
+            ctx.fillStyle = '#151c24';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw workspace coordinate guidelines layout metrics structures
+            ctx.strokeStyle = '#232d3b';
+            ctx.lineWidth = 1;
+            let startGridX = editorScrollX % 30;
+            for (let x = -startGridX; x < canvas.width; x += 30) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, 350);
+                ctx.stroke();
+            }
+
+            // Ground floor setup representation
+            ctx.fillStyle = '#1f2833';
+            ctx.fillRect(0, 350, canvas.width, 6);
+
+            ctx.save();
+            ctx.translate(-editorScrollX, 0);
+
+            // Draw existing level contents entries
+            obstacles.forEach(obs => {
+                if (obs.type === 1) {
+                    ctx.fillStyle = '#ff3e3e';
+                    ctx.beginPath();
+                    ctx.moveTo(obs.x, 350);
+                    ctx.lineTo(obs.x + 15, 320);
+                    ctx.lineTo(obs.x + 30, 350);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (obs.type === 2) {
+                    ctx.fillStyle = '#45f3ff';
+                    ctx.fillRect(obs.x, 320, 30, 30);
+                    ctx.strokeStyle = '#fff';
+                    ctx.strokeRect(obs.x, 320, 30, 30);
+                } else if (obs.type === 3) {
+                    ctx.fillStyle = '#ffbf00';
+                    ctx.beginPath();
+                    ctx.arc(obs.x + 15, 300, 10, 0, Math.PI*2);
+                    ctx.fill();
+                } else if (obs.type === 4) {
+                    ctx.fillStyle = '#ff007f';
+                    ctx.fillRect(obs.x, 180, 20, 170);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '9px Arial';
+                    ctx.fillText((obs.mode || 'CUBE').toUpperCase(), obs.x - 5, 170);
+                }
+            });
+
+            ctx.restore();
+
+            // Scrolling overlay guide telemetry strings
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '14px Arial';
+            ctx.fillText(`Timeline Position: X=${editorScrollX} | Use A / D keys to pan track left/right`, 20, 30);
+        }
+
+        function testEditorLevel() {
+            // Save state array elements mapping memory configuration directly
+            let customs = getCustomLevels();
+            let idx = customs.findIndex(l => l.id === isEditingId);
+            if (idx !== -1) {
+                customs[idx].data = obstacles;
+                saveCustomLevels(customs);
+            }
+
+            document.getElementById('editor-ui').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('hud-level-name').innerText = customs[idx].name;
+            
+            currentMode = 'play';
+            resetPlayerSession();
+            startAudio();
+        }
+
+        function exitEditor() {
+            let customs = getCustomLevels();
+            let idx = customs.findIndex(l => l.id === isEditingId);
+            if (idx !== -1) {
+                customs[idx].data = obstacles;
+                saveCustomLevels(customs);
+            }
+            backToMainMenu();
+        }
+    </script>
+</body>
+</html>
