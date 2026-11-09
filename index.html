@@ -3,41 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Fullscreen</title>
+    <title>Geometry Dash Infinite Ultimate</title>
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-        body, html { width:100%; height:100%; background:#000; overflow:hidden; font-family:sans-serif; }
-        #container { position:relative; width:100%; height:100%; }
-        canvas { display:block; width:100%; height:100%; }
-        .screen { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; }
-        .hidden { display:none !important; }
-        h1 { font-size:4vw; color:#00ffff; margin-bottom:20px; font-style:italic; font-weight:900; }
-        .btn { background:linear-gradient(135deg,#00ffff,#0088cc); color:#fff; border:none; padding:12px 35px; font-size:18px; font-weight:bold; border-radius:25px; cursor:pointer; margin:8px; box-shadow:0 4px 15px rgba(0,255,255,0.3); }
-        .btn:hover { transform:scale(1.05); }
-        .btn-danger { background:linear-gradient(135deg,#ff3333,#990000); }
-        .stats { position:absolute; top:20px; left:20px; right:20px; display:flex; justify-content:space-between; pointer-events:none; z-index:5; font-weight:bold; font-size:18px; }
-        .stat-box { background:rgba(0,0,0,0.6); padding:6px 15px; border-radius:20px; border:1px solid #444; }
-        .menu-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; width:80%; max-height:40vh; overflow-y:auto; padding:10px; }
-        .card { background:rgba(255,255,255,0.05); border:2px solid #444; border-radius:10px; padding:15px; text-align:center; cursor:pointer; }
-        .card:hover { border-color:#00ffff; background:rgba(0,255,255,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+        body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
+        #container { position: relative; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+        .hidden { display: none !important; }
+        h1 { font-size: 5vw; color: #00ffff; margin-bottom: 20px; font-style: italic; font-weight: 900; text-shadow: 0 0 10px #00ffff; }
+        h2 { font-size: 3vw; color: #ff00ff; margin-bottom: 20px; text-shadow: 0 0 10px #ff00ff; }
+        .btn { background: linear-gradient(135deg, #00ffff, #0088cc); color: #fff; border: none; padding: 14px 40px; font-size: 18px; font-weight: bold; border-radius: 25px; cursor: pointer; margin: 8px; box-shadow: 0 4px 15px rgba(0,255,255,0.3); transition: transform 0.1s; }
+        .btn:hover { transform: scale(1.05); }
+        .btn-danger { background: linear-gradient(135deg, #ff3333, #990000); }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 80%; max-height: 45vh; overflow-y: auto; padding: 10px; }
+        .card { background: rgba(255,255,255,0.05); border: 2px solid #444; border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; color: #fff; }
+        .card:hover { border-color: #00ffff; background: rgba(0,255,255,0.1); }
+        .stats { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; z-index: 5; font-weight: bold; font-size: 18px; }
+        .stat-box { background: rgba(0,0,0,0.6); padding: 6px 15px; border-radius: 20px; border: 1px solid #444; }
+        #exit-btn { position: absolute; top: 20px; right: 20px; z-index: 20; background: rgba(255,50,50,0.9); border: 2px solid #fff; color: #fff; font-weight: bold; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-size: 14px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
     </style>
 </head>
 <body>
 <div id="container">
+    <button id="exit-btn" class="hidden" onclick="exitLevel()">🚪 EXIT LEVEL</button>
+
     <div class="stats">
-        <div class="stat-box" style="color:#ffcc00;">✨ Stars: <span id="ui-stars">0</span></div>
-        <div class="stat-box" style="color:#ff3366;">💀 Attempts: <span id="ui-attempts">0</span></div>
+        <div class="stat-box" style="color: #ffcc00;">✨ Stars: <span id="ui-stars">0</span></div>
+        <div class="stat-box" style="color: #ff3366;">💀 Attempts: <span id="ui-attempts">0</span></div>
     </div>
 
     <!-- MAIN MENU -->
     <div id="scr-main" class="screen">
         <h1>GEOMETRY DASH ULTIMATE</h1>
-        <button class="btn" onclick="showScreen('scr-levels')">PLAY GAME</button>
+        <button class="btn" onclick="showScreen('scr-levels')">PLAY MAIN LEVELS</button>
+        <button class="btn" style="background: linear-gradient(135deg, #ffcc00, #ff6600);" onclick="startDaily()">⚡ DAILY LEVEL ⚡</button>
     </div>
 
     <!-- LEVEL MENU -->
     <div id="scr-levels" class="screen hidden">
-        <h2 style="margin-bottom:20px; color:#ff00ff;">SELECT LEVEL</h2>
+        <h2>SELECT LEVEL</h2>
         <div class="menu-grid" id="level-container"></div>
         <button class="btn btn-danger" onclick="showScreen('scr-main')">BACK</button>
     </div>
@@ -58,167 +63,188 @@
     window.addEventListener('resize', resize);
     resize();
 
-    let save = { stars: 0, attempts: 0, progress: {} };
-    let gameState = "MENU";
-    let curLevel = 0;
-    let camX = 0;
+    // PROCEDURAL AUDIO SYNTH ENGINE
+    let audioCtx = null;
+    function playTone(f, type, d, v = 0.06) {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator(); let g = audioCtx.createGain();
+            osc.type = type; osc.frequency.value = f;
+            g.gain.setValueAtTime(v, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + d);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + d);
+        } catch (e) {}
+    }
+
+    let gameState = "MENU"; let curLevel = 0; let camX = 0; let isHolding = false;
+    let player = { x: 100, y: 0, vy: 0, size: 36, grounded: true, rotation: 0, mode: 'cube' };
+    let obsList = [];
 
     const LEVELS = [
-        { name: "Stereo Madness", speed: 5.5, color: "#112288", data: [{x:400,t:'block'},{x:600,t:'spike'},{x:850,t:'spike'},{x:1100,t:'block'},{x:1300,t:'spike'},{x:1600,t:'spike'},{x:1900,t:'block'},{x:2200,t:'spike'}] },
-        { name: "Back On Track", speed: 6.0, color: "#440066", data: [{x:450,t:'spike'},{x:700,t:'block'},{x:950,t:'spike'},{x:1200,t:'spike'},{x:1500,t:'block'},{x:1800,t:'spike'},{x:2100,t:'spike'}] },
-        { name: "Polargeist", speed: 6.5, color: "#005522", data: [{x:400,t:'spike'},{x:650,t:'block'},{x:900,t:'spike'},{x:1150,t:'spike'},{x:1400,t:'block'},{x:1750,t:'spike'}] }
+        { name: "Stereo Madness", speed: 5.5, color: "#112288", data: [{x:500,t:'spike'},{x:750,t:'block'},{x:950,t:'p_ship'},{x:1200,t:'spike'},{x:1450,t:'orb'},{x:1650,t:'p_cube'},{x:1900,t:'spike'}] },
+        { name: "Back On Track", speed: 6.0, color: "#440066", data: [{x:500,t:'spike'},{x:700,t:'orb'},{x:900,t:'p_wave'},{x:1250,t:'spike'},{x:1550,t:'p_cube'},{x:1850,t:'spike'}] },
+        { name: "Clutterfunk", speed: 6.6, color: "#770022", data: [{x:450,t:'spike'},{x:650,t:'p_robot'},{x:900,t:'block'},{x:1150,t:'orb'},{x:1400,t:'spike'},{x:1700,t:'p_cube'},{x:2000,t:'spike'}] }
     ];
 
-    let player = { x: 100, y: 0, vy: 0, size: 36, grounded: true, rotation: 0 };
-    let obsList = [];
+    let save = { stars: 0, attempts: 0, progress: {} };
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
-        if(id === 'scr-levels') renderLevels();
-        if(id === 'scr-main') gameState = "MENU";
+        document.getElementById('exit-btn').classList.add('hidden');
+        if (id === 'scr-levels') renderLevels();
+        if (id === 'scr-main') gameState = "MENU";
     }
 
     function renderLevels() {
-        const div = document.getElementById('level-container');
-        div.innerHTML = '';
+        const div = document.getElementById('level-container'); div.innerHTML = '';
         LEVELS.forEach((l, i) => {
-            let p = save.progress[l.name] || 0;
-            let card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<h3>${l.name}</h3><p style="color:#00ffff;margin-top:5px;">Best: ${p}%</p>`;
-            card.onclick = () => startLevel(i);
-            div.appendChild(card);
+            let card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `<h3>\${l.name}</h3><p style="color:#00ffff;font-size:13px;margin-top:5px;">Speed: \${l.speed}x</p>`;
+            card.onclick = () => startLevel(i, false); div.appendChild(card);
         });
     }
 
-    function startLevel(idx) {
+    function startLevel(idx, isDaily) {
         curLevel = idx;
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        obsList = JSON.parse(JSON.stringify(LEVELS[idx].data));
-        player.x = 100;
-        player.y = groundY - player.size;
-        player.vy = 0;
-        player.grounded = true;
-        player.rotation = 0;
-        camX = 0;
-        save.attempts++;
-        document.getElementById('ui-attempts').innerText = save.attempts;
-        gameState = "PLAY";
+        document.getElementById('exit-btn').classList.remove('hidden');
+
+        if (isDaily) {
+            obsList = [{x:500,t:'spike'},{x:700,t:'orb'},{x:950,t:'p_ship'},{x:1250,t:'spike'},{x:1500,t:'p_wave'},{x:1800,t:'spike'},{x:2050,t:'p_cube'},{x:2350,t:'spike'}];
+            LEVELS[0] = { name: "Daily Level", speed: 6.0, color: "#223344", data: obsList }; curLevel = 0;
+        } else {
+            obsList = JSON.parse(JSON.stringify(LEVELS[idx].data));
+        }
+
+        player.x = 100; player.y = groundY - player.size; player.vy = 0;
+        player.grounded = true; player.rotation = 0; player.mode = 'cube';
+        camX = 0; gameState = "PLAY"; playTone(440, 'triangle', 0.2);
+        save.attempts++; document.getElementById('ui-attempts').innerText = save.attempts;
     }
 
-    function jump() {
-        if(gameState === "PLAY" && player.grounded) {
-            player.vy = -12;
-            player.grounded = false;
+    function startDaily() { startLevel(0, true); }
+    function exitLevel() { showScreen('scr-main'); }
+
+    function controlInput(press) {
+        isHolding = press;
+        if (!press || gameState !== "PLAY") return;
+
+        if (player.mode === 'cube' && player.grounded) {
+            player.vy = -12.5; player.grounded = false; playTone(330, 'square', 0.12);
+        } else if (player.mode === 'robot' && player.grounded) {
+            player.vy = -14.5; player.grounded = false; playTone(380, 'square', 0.15);
         }
+
+        obsList.forEach(o => {
+            let oY = o.t === 'block' ? groundY - 40 : groundY - 36;
+            if (o.t === 'orb' && Math.abs(player.x - o.x) < 65) {
+                player.vy = -11.5; player.grounded = false; playTone(580, 'sine', 0.1);
+            }
+        });
     }
-    window.addEventListener('keydown', (e) => { if(e.code === 'Space' || e.code === 'ArrowUp') { jump(); e.preventDefault(); } });
-    canvas.addEventListener('mousedown', jump);
+
+    window.addEventListener('keydown', (e) => { if(e.code==='Space'||e.code==='ArrowUp'){ controlInput(true); e.preventDefault(); } });
+    window.addEventListener('keyup', (e) => { if(e.code==='Space'||e.code==='ArrowUp'){ controlInput(false); } });
+    canvas.addEventListener('mousedown', () => controlInput(true));
+    canvas.addEventListener('mouseup', () => controlInput(false));
+    canvas.addEventListener('touchstart', (e) => { controlInput(true); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchend', () => controlInput(false));
 
     function loop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         if (gameState === "PLAY") {
-            let lvl = LEVELS[curLevel];
-            player.x += lvl.speed;
-            player.vy += 0.6; // Gravity
-            player.y += player.vy;
+            let speed = LEVELS[curLevel].speed;
+            player.x += speed;
             camX = player.x - 200;
 
-            // Ground Limit Check
-            if (player.y >= groundY - player.size) {
-                player.y = groundY - player.size;
-                player.vy = 0;
-                player.grounded = true;
-                player.rotation = 0;
+            if (player.mode === 'ship') {
+                if (isHolding) player.vy -= 0.65; else player.vy += 0.55;
+                player.y += player.vy; player.rotation = player.vy * 0.05;
+            } else if (player.mode === 'wave') {
+                player.vy = isHolding ? -speed : speed;
+                player.y += player.vy; player.rotation = isHolding ? -0.4 : 0.4;
             } else {
-                player.rotation += 0.08;
+                player.vy += 0.65; player.y += player.vy;
+                if (!player.grounded) player.rotation += 0.08; else player.rotation = 0;
             }
 
-            // Object Collision Engine
-            let endX = obsList.length > 0 ? obsList[obsList.length - 1].x + 500 : 2000;
-            let pct = Math.min(100, Math.floor((player.x / endX) * 100));
-            save.progress[lvl.name] = Math.max(save.progress[lvl.name] || 0, pct);
+            if (player.y >= groundY - player.size) {
+                player.y = groundY - player.size; player.vy = 0; player.grounded = true;
+            } else if (player.y <= 0) {
+                player.y = 0; player.vy = 0;
+            } else if (player.mode !== 'ship' && player.mode !== 'wave') {
+                player.grounded = false;
+            }
+
+            let endX = obsList.length > 0 ? obsList[obsList.length - 1].x + 600 : 2500;
 
             for (let i = 0; i < obsList.length; i++) {
                 let o = obsList[i];
                 let oY = o.t === 'block' ? groundY - 40 : groundY - 36;
-                
-                // Tight AABB Inner-Bounding Overlap Calculation 
+
+                if (Math.abs(player.x - o.x) < 20) {
+                    if (o.t === 'p_ship') player.mode = 'ship';
+                    if (o.t === 'p_wave') player.mode = 'wave';
+                    if (o.t === 'p_robot') player.mode = 'robot';
+                    if (o.t === 'p_cube') player.mode = 'cube';
+                }
+
                 if (player.x + player.size > o.x + 4 && player.x < o.x + 36 &&
                     player.y + player.size > oY + 4 && player.y < oY + 36) {
-                    
-                    if (o.t === 'spike') {
-                        startLevel(curLevel); // Crash reset safely
-                        return requestAnimationFrame(loop);
-                    }
-                    if (o.t === 'block') {
-                        if (player.y + player.size <= oY + 14 && player.vy >= 0) {
-                            player.y = oY - player.size;
-                            player.vy = 0;
-                            player.grounded = true;
-                        } else {
-                            startLevel(curLevel);
-                            return requestAnimationFrame(loop);
-                        }
+                    if (o.t === 'spike' || o.t === 'block') {
+                        playTone(100, 'sawtooth', 0.3); startLevel(curLevel, false); return requestAnimationFrame(loop);
                     }
                 }
             }
 
-            // Win evaluation loop
             if (player.x >= endX) {
-                save.stars += 5;
+                playTone(520, 'triangle', 0.4); save.stars += 5;
                 document.getElementById('ui-stars').innerText = save.stars;
                 showScreen('scr-levels');
             }
         }
 
-        // DRAW BACKDROP
         ctx.fillStyle = gameState === "PLAY" ? LEVELS[curLevel].color : "#112233";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // DRAW DESIGN GRID
         ctx.strokeStyle = "rgba(255,255,255,0.03)";
         let sGrid = Math.floor(camX / 40) * 40;
-        for(let gx=sGrid; gx < sGrid + canvas.width + 40; gx += 40) {
+        for (let gx = sGrid; gx < sGrid + canvas.width + 40; gx += 40) {
             ctx.beginPath(); ctx.moveTo(gx - camX, 0); ctx.lineTo(gx - camX, groundY); ctx.stroke();
         }
 
-        // DRAW GROUND LINE Anchor Mesh
-        ctx.fillStyle = "#0c1a2d";
-        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-        ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY); ctx.stroke();
+        ctx.fillStyle = "#0c1a2d"; ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+        ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY); stroke();
 
-        // DRAW BLOCKS & SPIKES RENDER PLACEMENT
         if (gameState === "PLAY") {
             obsList.forEach(o => {
                 let rx = o.x - camX;
-                if(o.t === 'block') {
-                    ctx.fillStyle = "#334466"; ctx.fillRect(rx, groundY - 40, 40, 40);
-                    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(rx, groundY - 40, 40, 40);
-                }
-                if(o.t === 'spike') {
-                    ctx.fillStyle = "#ff3333"; ctx.beginPath();
-                    ctx.moveTo(rx, groundY); ctx.lineTo(rx + 20, groundY - 36); ctx.lineTo(rx + 40, groundY);
-                    ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#fff"; ctx.stroke();
+                if (o.t === 'block') { ctx.fillStyle = "#334466"; ctx.fillRect(rx, groundY - 40, 40, 40); }
+                else if (o.t === 'spike') {
+                    ctx.fillStyle = "#ff3333"; ctx.beginPath(); ctx.moveTo(rx, groundY); ctx.lineTo(rx + 20, groundY - 36); ctx.lineTo(rx + 40, groundY); ctx.fill();
+                } else if (o.t === 'orb') {
+                    ctx.fillStyle = "#ffcc00"; ctx.beginPath(); ctx.arc(rx + 20, groundY - 60, 14, 0, Math.PI * 2); ctx.fill();
+                } else if (o.t.startsWith('p_')) {
+                    ctx.fillStyle = "rgba(255, 0, 255, 0.4)"; ctx.fillRect(rx, 0, 15, groundY);
                 }
             });
 
-            // DRAW PLAYER RECTANGLE MATRIX
             ctx.save();
             ctx.translate(player.x + player.size/2 - camX, player.y + player.size/2);
             ctx.rotate(player.rotation);
-            ctx.fillStyle = "#00ffff"; ctx.fillRect(-player.size/2, -player.size/2, player.size, player.size);
-            ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; ctx.strokeRect(-player.size/2, -player.size/2, player.size, player.size);
+            ctx.fillStyle = player.mode === 'ship' ? '#ff00ff' : player.mode === 'wave' ? '#00ff00' : '#00ffff';
+            ctx.fillRect(-player.size/2, -player.size/2, player.size, player.size);
+            ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.strokeRect(-player.size/2, -player.size/2, player.size, player.size);
             ctx.restore();
 
-            // PROGRESS TEXT HUD
-            let endX = obsList.length > 0 ? obsList[obsList.length - 1].x + 500 : 2000;
+            let endX = obsList.length > 0 ? obsList[obsList.length - 1].x + 600 : 2500;
             let pct = Math.min(100, Math.floor((player.x / endX) * 100));
-            ctx.fillStyle = "#fff"; ctx.font = "bold 20px sans-serif";
-            ctx.fillText(`${pct}%`, canvas.width/2 - 20, 50);
+            ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.fillText(`\${pct}%`, canvas.width/2 - 20, 50);
+            ctx.font = "16px sans-serif"; ctx.fillText(`Vehicle: \${player.mode.toUpperCase()}`, 20, window.innerHeight - 20);
         }
 
         requestAnimationFrame(loop);
