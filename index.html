@@ -26,18 +26,18 @@
 </head>
 <body>
 <div id="container">
-    <button id="exit-btn" class="hidden" onclick="exitLevel()">🚪 Exit Level</button>
+    <button id="exit-btn" class="hidden" onclick="exitLevel()"> Exit Level</button>
 
     <div class="stats">
-        <div class="stat-box" style="color:#ffcc00;">✨ Stars: <span id="ui-stars">0</span></div>
-        <div class="stat-box" style="color:#ff3366;">💀 Attempts: <span id="ui-attempts">0</span></div>
+        <div class="stat-box" style="color:#ffcc00;"> Stars: <span id="ui-stars">0</span></div>
+        <div class="stat-box" style="color:#ff3366;"> Attempts: <span id="ui-attempts">0</span></div>
     </div>
 
     <!-- MAIN MENU -->
     <div id="scr-main" class="screen">
         <h1>GEOMETRY DASH MINI</h1>
         <button class="btn" onclick="showScreen('scr-levels')">PLAY MAIN LEVELS</button>
-        <button class="btn" style="background:linear-gradient(135deg,#ffcc00,#ff6600);" onclick="startDaily()">⚡ DAILY LEVEL ⚡</button>
+        <button class="btn" style="background:linear-gradient(135deg,#ffcc00,#ff6600);" onclick="startDaily()"> DAILY LEVEL </button>
     </div>
 
     <!-- LEVEL MENU -->
@@ -63,7 +63,6 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // PRO AUDIO GENERATOR
     let audioCtx = null;
     function playTone(f, type, d, v = 0.06) {
         try {
@@ -191,7 +190,8 @@
                 if (Math.abs(player.x - o.x) < 20) {
                     if (o.t === 'p_ship') player.mode = 'ship';
                     if (o.t === 'p_wave') player.mode = 'wave';
-if (o.t === 'p_robot') player.mode = 'robot';
+                    if (o.t === 'p_robot') player.mode = 'robot';
+Use code with caution.
 if (o.t === 'p_cube') player.mode = 'cube';
 }
 if (player.x + player.size > o.x + 4 && player.x < o.x + 36 &&
@@ -207,16 +207,13 @@ document.getElementById('ui-stars').innerText = save.stars;
 showScreen('scr-levels');
 }
 }
-// BACKDROP
 ctx.fillStyle = gameState === "PLAY" ? activeColor : "#112233";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
-// GRID WORKSPACE LINES
 ctx.strokeStyle = "rgba(255,255,255,0.03)";
 let sGrid = Math.floor(camX / 40) * 40;
 for (let gx = sGrid; gx < sGrid + canvas.width + 40; gx += 40) {
 ctx.beginPath(); ctx.moveTo(gx - camX, 0); ctx.lineTo(gx - camX, groundY); ctx.stroke();
 }
-// FLOORS
 ctx.fillStyle = "#0c1a2d"; ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
 ctx.strokeStyle = "#00ffff"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY); ctx.stroke();
 if (gameState === "PLAY") {
@@ -231,7 +228,6 @@ ctx.fillStyle = "#ffcc00"; ctx.beginPath(); ctx.arc(rx + 20, groundY - 60, 14, 0
 ctx.fillStyle = "rgba(255, 0, 255, 0.4)"; ctx.fillRect(rx, 0, 15, groundY);
 }
 });
-// HERO AVATAR
 ctx.save();
 ctx.translate(player.x + player.size/2 - camX, player.y + player.size/2);
 ctx.rotate(player.rotation);
